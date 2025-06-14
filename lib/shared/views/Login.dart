@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'Register.dart';
+
 class Login extends StatelessWidget {
   const Login({super.key});
 
@@ -68,6 +70,9 @@ class Login extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                onPressed: () {
+
+                },
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(const Color(0xFF4A90E2)),
                   shape: WidgetStateProperty.all(
@@ -76,7 +81,6 @@ class Login extends StatelessWidget {
                     ),
                   ),
                 ),
-                onPressed: () {}, // Cambiado para habilitar el botón
                 child: const Text(
                   'Iniciar Sesion',
                   style: TextStyle(
@@ -91,6 +95,11 @@ class Login extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const Register())
+                  );
+                },
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(const Color(0xFFFFFFFF)),
                   shape: WidgetStateProperty.all(
@@ -99,7 +108,6 @@ class Login extends StatelessWidget {
                     ),
                   ),
                 ),
-                onPressed: () {}, // Cambiado para habilitar el botón
                 child: const Text(
                   'Registrase',
                   style: TextStyle(
