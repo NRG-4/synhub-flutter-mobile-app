@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:synhub/shared/views/Login.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:synhub/shared/views/login.dart';
+
+import 'shared/bloc/auth/auth_bloc.dart';
+import 'shared/services/auth_service.dart';
+import 'shared/services/member_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,15 +13,20 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'SynHub',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    return BlocProvider(
+      create: (_) => AuthBloc(
+        authService: AuthService(),
+        memberService: MemberService(),
       ),
-      home: Login(),
+      child: MaterialApp(
+        title: 'SynHub',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        ),
+        home: Login(),
+      ),
     );
   }
 }
