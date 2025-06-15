@@ -6,4 +6,8 @@ class MemberService {
   Future<http.Response> getMemberDetails() async {
     return await ApiClient.get('member/details');
   }
+
+  Future<http.Response> getMemberGroup() async {
+    return await ApiClient.get('member/group');
+  }
 }
