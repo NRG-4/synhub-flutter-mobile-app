@@ -4,6 +4,7 @@ import '../bloc/auth/auth_bloc.dart';
 import '../bloc/auth/auth_event.dart';
 import '../bloc/auth/auth_state.dart';
 import '../services/auth_service.dart';
+import '../services/member_service.dart';
 import 'Register.dart';
 import 'SearchGroup.dart';
 import 'home.dart';
@@ -34,6 +35,7 @@ class _LoginState extends State<Login> {
       body: BlocProvider(
         create: (context) => AuthBloc(
           authService: AuthService(),
+          memberService: MemberService(),
         ),
         child: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
