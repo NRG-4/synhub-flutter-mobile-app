@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../group/views/SearchGroup.dart';
 import '../bloc/auth/auth_bloc.dart';
 import '../bloc/auth/auth_event.dart';
 import '../bloc/auth/auth_state.dart';
 import '../services/auth_service.dart';
 import '../services/member_service.dart';
 import 'Register.dart';
-import 'SearchGroup.dart';
 import 'home.dart';
 
 class Login extends StatefulWidget {

@@ -6,7 +6,6 @@ import '../../models/sign_in_request.dart';
 import '../../models/signn_in_response.dart';
 import '../../services/auth_service.dart';
 import '../../services/member_service.dart';
-import '../../models/member.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
