@@ -30,16 +30,16 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
-      body: BlocProvider(
-        create: (context) => AuthBloc(
-          authService: AuthService(),
-          memberService: MemberService(),
-        ),
-        child: BlocConsumer<AuthBloc, AuthState>(
+    return BlocProvider(
+      create: (context) => AuthBloc(
+        authService: AuthService(),
+        memberService: MemberService(),
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFFFFFFF),
+        body: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
-            if (state is AuthSuccess) {
+            if (state is SignInSuccess) {
               // Navegar a la pantalla correspondiente después de login exitoso
               Navigator.pushReplacement(
                 context,
@@ -155,29 +155,35 @@ class _LoginState extends State<Login> {
                   const SizedBox(height: 10),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const Register()),
-                        );
-                      },
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(
-                            const Color(0xFFFFFFFF)),
-                        shape: WidgetStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                    child: Builder(
+                      builder: (context) => ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BlocProvider.value(
+                                value: context.read<AuthBloc>(),
+                                child: const Register(),
+                              ),
+                            ),
+                          );
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all(
+                              const Color(0xFFFFFFFF)),
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                         ),
-                      ),
-                      child: const Text(
-                        'Registrase',
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+                        child: const Text(
+                          'Registrase',
+                          style: TextStyle(
+                            fontSize: 20,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
