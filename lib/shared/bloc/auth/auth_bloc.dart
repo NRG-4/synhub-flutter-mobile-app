@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import '../../client/api_client.dart';
 import '../../models/sign_in_request.dart';
+import '../../models/sign_up_response.dart';
 import '../../models/signn_in_response.dart';
 import '../../services/auth_service.dart';
 import '../../services/member_service.dart';
@@ -15,6 +16,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   AuthBloc({required this.authService, required this.memberService}) : super(AuthInitial()) {
     on<SignInEvent>(_onSignInEvent);
+    on<SignUpEvent>(_onSignUpEvent);
     on<ResetAuthStateEvent>(_onResetAuthStateEvent);
   }
 
@@ -36,7 +38,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         // Fetch member details
         final memberResponse = await memberService.getMemberDetails();
         if (memberResponse.statusCode == 200) {
-          emit(AuthSuccess(signInResponse)); // O puedes emitir un estado con el member
+          emit(SignInSuccess(signInResponse)); // O puedes emitir un estado con el member
         } else if (memberResponse.statusCode == 404) {
           emit(AuthFailure('No se encontró información del miembro'));
         } else {
@@ -47,6 +49,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     } catch (e) {
       emit(AuthFailure('Error: $e'));
+    }
+  }
+
+  Future<void> _onSignUpEvent(
+      SignUpEvent event,
+      Emitter<AuthState> emit,
+      ) async {
+    emit(AuthLoading());
+    try {
+      final response = await authService.signUp(event.request);
+
+      if (response.statusCode == 201) {
+        final signUpResponse = SignUpResponse.fromJson(json.decode(response.body));
+        emit(SignUpSuccess(signUpResponse));
+      } else {
+        final error = json.decode(response.body)['message'] ?? 'Error en el registro';
+        emit(AuthFailure(error));
+      }
+    } catch (e) {
+      emit(AuthFailure('Error de conexión: $e'));
     }
   }
 
