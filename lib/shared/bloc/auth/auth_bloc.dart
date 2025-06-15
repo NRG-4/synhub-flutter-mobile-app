@@ -5,13 +5,16 @@ import '../../client/api_client.dart';
 import '../../models/sign_in_request.dart';
 import '../../models/signn_in_response.dart';
 import '../../services/auth_service.dart';
+import '../../services/member_service.dart';
+import '../../models/member.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthService authService;
+  final MemberService memberService;
 
-  AuthBloc({required this.authService}) : super(AuthInitial()) {
+  AuthBloc({required this.authService, required this.memberService}) : super(AuthInitial()) {
     on<SignInEvent>(_onSignInEvent);
     on<ResetAuthStateEvent>(_onResetAuthStateEvent);
   }
@@ -31,7 +34,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           json.decode(response.body),
         );
         ApiClient.updateToken(signInResponse.token);
-        emit(AuthSuccess(signInResponse));
+        // Fetch member details
+        final memberResponse = await memberService.getMemberDetails();
+        if (memberResponse.statusCode == 200) {
+          emit(AuthSuccess(signInResponse)); // O puedes emitir un estado con el member
+        } else if (memberResponse.statusCode == 404) {
+          emit(AuthFailure('No se encontró información del miembro'));
+        } else {
+          emit(AuthFailure('Error al obtener detalles del miembro: \\nCódigo: \\${memberResponse.statusCode}'));
+        }
       } else {
         emit(AuthFailure('Login failed: ${response.statusCode}'));
       }
