@@ -26,7 +26,6 @@ class _RegisterState extends State<Register> {
   final TextEditingController pass2Controller = TextEditingController();
 
   bool _isLoading = false;
-  bool hasGroup = true;
 
   @override
   void dispose() {
@@ -82,7 +81,7 @@ class _RegisterState extends State<Register> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) =>
-              hasGroup ? const SearchGroup() : const Home(),),
+              const SearchGroup()),
             );
           } else if (state is AuthFailure) {
             setState(() => _isLoading = false);
