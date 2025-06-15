@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:synhub/shared/views/Login.dart';
+import 'package:synhub/shared/views/login.dart';
+
 
 void main() {
   runApp(const MyApp());
