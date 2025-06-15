@@ -1,3 +1,4 @@
+import '../../../group/models/group.dart';
 import '../../models/member.dart';
 
 abstract class MemberState {}
@@ -17,3 +18,11 @@ class MemberError extends MemberState {
 
   MemberError(this.message);
 }
+
+class MemberGroupLoaded extends MemberState {
+  final Group group;
+
+  MemberGroupLoaded(this.group);
+}
+
+class MemberNoGroup extends MemberState {}
