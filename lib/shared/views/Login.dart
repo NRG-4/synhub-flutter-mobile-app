@@ -28,6 +28,31 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 
+  Future<void> _handlePostLogin() async {
+    final memberService = MemberService();
+    try {
+      final response = await memberService.getMemberGroup();
+      if (!mounted) return;
+      if (response.statusCode == 200) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SearchGroup()),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SearchGroup()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -40,14 +65,7 @@ class _LoginState extends State<Login> {
         body: BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) {
             if (state is SignInSuccess) {
-              // Navegar a la pantalla correspondiente después de login exitoso
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                  hasGroup ? const SearchGroup() : const Home(),
-                ),
-              );
+              _handlePostLogin();
             }
           },
           builder: (context, state) {
