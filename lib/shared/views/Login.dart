@@ -4,6 +4,7 @@ import '../../group/views/SearchGroup.dart';
 import '../bloc/auth/auth_bloc.dart';
 import '../bloc/auth/auth_event.dart';
 import '../bloc/auth/auth_state.dart';
+import '../bloc/member/member_bloc.dart';
 import '../services/auth_service.dart';
 import '../services/member_service.dart';
 import 'Register.dart';
@@ -36,7 +37,12 @@ class _LoginState extends State<Login> {
       if (response.statusCode == 200) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const Home()),
+          MaterialPageRoute(
+            builder: (context) => BlocProvider(
+              create: (_) => MemberBloc(memberService: MemberService()),
+              child: const Home(),
+            ),
+          ),
         );
       } else {
         Navigator.pushReplacement(
