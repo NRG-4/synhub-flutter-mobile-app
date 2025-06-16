@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synhub/shared/views/Login.dart';
 import '../../group/views/group.dart';
 import '../../statistics/views/statistics.dart';
 import '../../tasks/views/tasks.dart';
 import '../../validations/views/request_&_validations.dart';
 import '../../shared/client/api_client.dart';
+import '../bloc/member/member_bloc.dart';
+import '../bloc/member/member_event.dart';
+import '../bloc/member/member_state.dart';
+import '../services/member_service.dart';
+import '../models/member.dart';
 
 const List<Map<String, dynamic>> drawerOptions = [
   {'label': 'Grupo', 'icon': Icons.groups, 'route': 'Group'},
@@ -22,38 +28,66 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  String _name = '';
+  String _surname = '';
+  String _imgUrl = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // Lanzar el evento para obtener los datos del miembro
+    Future.microtask(() {
+      context.read<MemberBloc>().add(FetchMemberDetailsEvent());
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('SynHub'),
-      ),
-      drawerEnableOpenDragGesture: true,
-      drawer: _CustomDrawer(
-        name: 'Nombre',
-        surname: 'Apellido',
-        imgUrl: '',
-        onNavigate: (route) {
-          Navigator.pop(context);
-          if (route == 'Group') {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => GroupScreen()));
-          } else if (route == 'Tasks') {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const TasksScreen()));
-          } else if (route == 'Statistics') {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const StatisticsScreen()));
-          } else if (route == 'RequestsAndValidations') {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const RequestAndValidationsScreen()));
-          } else if (route == 'Login') {
-            ApiClient.resetToken();
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const Login()));
-          }
-        },
-      ),
-      body: WillPopScope(
-        onWillPop: () async => false,
-        child: const Center(
-          child: Text('Bienvenido a SynHub'),
+    return BlocListener<MemberBloc, MemberState>(
+      listener: (context, state) {
+        if (state is MemberLoaded) {
+          setState(() {
+            _name = state.member.name;
+            _surname = state.member.surname;
+            _imgUrl = state.member.imgUrl;
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: const Text('SynHub'),
+        ),
+        drawerEnableOpenDragGesture: true,
+        drawer: _CustomDrawer(
+          name: _name,
+          surname: _surname,
+          imgUrl: _imgUrl,
+          onNavigate: (route) {
+            Navigator.pop(context);
+            if (route == 'Group') {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => GroupScreen()));
+            } else if (route == 'Group/Invitations') {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const RequestAndValidationsScreen()));
+            } else if (route == 'Group/Members') {
+              // Implementa la navegación a la pantalla de miembros
+            } else if (route == 'Tasks') {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const TasksScreen()));
+            } else if (route == 'AnalyticsAndReports') {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const StatisticsScreen()));
+            } else if (route == 'RequestsAndValidations') {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const RequestAndValidationsScreen()));
+            } else if (route == 'Login') {
+              ApiClient.resetToken();
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const Login()));
+            }
+          },
+        ),
+        body: PopScope(
+          canPop: false,
+          child: const Center(
+            child: Text('Bienvenido a SynHub'),
+          ),
         ),
       ),
     );
