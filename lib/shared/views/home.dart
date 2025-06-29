@@ -56,6 +56,7 @@ class _HomeState extends State<Home> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
+          backgroundColor: Colors.white,
           title: const Text('SynHub'),
         ),
         drawerEnableOpenDragGesture: true,
