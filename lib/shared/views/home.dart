@@ -169,7 +169,7 @@ class _CustomDrawer extends StatelessWidget {
             _buildDrawerItem(
               icon: Icons.bar_chart,
               label: 'Mi desempeño',
-              onTap: () => onNavigate('Statistics'),
+              onTap: () => onNavigate('AnalyticsAndReports'),
             ),
             _buildDrawerItem(
               icon: Icons.fact_check,
