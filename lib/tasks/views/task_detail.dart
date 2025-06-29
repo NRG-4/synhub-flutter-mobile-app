@@ -117,6 +117,33 @@ class TaskDetail extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
+              Center(
+                child: ElevatedButton(
+                    onPressed: (){},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFFFF9800),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child:
+                    Text("Enviar un comentario", style: TextStyle(fontSize: 18, color: Colors.white))
+                ),
+              ),
+              const SizedBox(height: 12),
+              Center(
+                child: ElevatedButton(
+                    onPressed: (){},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xff4CAF50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child:
+                    Text("Marcar como completada", style: TextStyle(fontSize: 18, color: Colors.white))
+                ),
+              )
             ],
           ),
         ),
