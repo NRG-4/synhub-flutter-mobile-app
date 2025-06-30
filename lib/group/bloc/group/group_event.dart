@@ -5,3 +5,6 @@ class SearchGroupByCodeEvent extends GroupEvent {
 
   SearchGroupByCodeEvent(this.code);
 }
+
+class LoadMemberGroupEvent extends GroupEvent {
+}
