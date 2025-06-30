@@ -17,9 +17,24 @@ class GroupScreen extends StatelessWidget {
         ..add(LoadMemberGroupEvent()),
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          title: Text('Group'),
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(kToolbarHeight),
+          child: BlocBuilder<GroupBloc, GroupState>(
+            builder: (context, state) {
+              String title = 'Group';
+              if (state is MemberGroupLoaded) {
+                title = state.group.name;
+              } else if (state is GroupLoading) {
+                title = 'Cargando...';
+              } else if (state is GroupError) {
+                title = 'Error';
+              }
+              return AppBar(
+                backgroundColor: Colors.white,
+                title: Text(title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              );
+            },
+          ),
         ),
         body: BlocBuilder<GroupBloc, GroupState>(
           builder: (context, state) {
@@ -43,20 +58,70 @@ class GroupScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Grupo: ${group.name}',
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Center(
+            child: Card(
+              color: Color(0xFF4A90E2),
+              elevation: 5,
+              child:
+                Padding(
+                  padding: const EdgeInsets.all(14.0),
+                  child: Text('#${group.code}', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white)),
+                )
+            ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            'Código del grupo: ${group.code}',
-            style: const TextStyle(fontSize: 18),
+          const SizedBox(height: 12),
+          Center(
+            child: Card(
+              color: Color(0xFF1A4E85),
+              elevation: 5,
+              child:
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Text(group.description,
+                      style:
+                      TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                      ),
+                    textAlign: TextAlign.justify,
+                  ),
+                )
+            ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            'Descripción: ${group.description}',
-            style: const TextStyle(fontSize: 16),
+          const SizedBox(height: 12),
+          Text('Tus compañeros de equipo:',
+              style:
+              TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A4E85)
+              )
           ),
+          const SizedBox(height: 12),
+          Card(
+            color: Color(0xFFF5F5F5),
+            elevation: 5,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Card(
+                color: Colors.white,
+                elevation: 5,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: group.members.map((member) {
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: NetworkImage(member.imgUrl),
+                      ),
+                      title: Text('${member.name} ${member.surname}'),
+                      subtitle: Text(member.email),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          )
         ],
       ),
     );

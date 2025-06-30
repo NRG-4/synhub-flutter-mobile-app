@@ -9,8 +9,6 @@ import '../../shared/client/api_client.dart';
 import '../bloc/member/member_bloc.dart';
 import '../bloc/member/member_event.dart';
 import '../bloc/member/member_state.dart';
-import '../services/member_service.dart';
-import '../models/member.dart';
 
 const List<Map<String, dynamic>> drawerOptions = [
   {'label': 'Grupo', 'icon': Icons.groups, 'route': 'Group'},
