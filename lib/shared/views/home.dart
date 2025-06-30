@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synhub/shared/views/Login.dart';
-import '../../group/views/group.dart';
+import '../../group/views/group_screen.dart';
 import '../../statistics/views/statistics.dart';
 import '../../tasks/views/tasks.dart';
 import '../../validations/views/request_&_validations.dart';
