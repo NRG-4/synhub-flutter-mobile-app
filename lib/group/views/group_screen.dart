@@ -107,17 +107,21 @@ class GroupScreen extends StatelessWidget {
               child: Card(
                 color: Colors.white,
                 elevation: 5,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: group.members.map((member) {
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(member.imgUrl),
-                      ),
-                      title: Text('${member.name} ${member.surname}'),
-                      subtitle: Text(member.email),
-                    );
-                  }).toList(),
+                  child: SizedBox(
+                  height: 400, // Altura máxima para evitar desbordes
+                  child: ListView(
+                    shrinkWrap: true,
+                    physics: AlwaysScrollableScrollPhysics(),
+                    children: group.members.map((member) {
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: NetworkImage(member.imgUrl),
+                        ),
+                        title: Text('${member.name} ${member.surname}'),
+                        subtitle: Text(member.username),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
             ),
