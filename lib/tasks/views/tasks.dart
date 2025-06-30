@@ -29,8 +29,88 @@ class _TasksScreenState extends State<TasksScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-          backgroundColor: Colors.white,
-          title: Text('Mis Tareas', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold))
+        backgroundColor: Colors.white,
+        title: Text('Mis Tareas', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: Container(
+              width: 26,
+              height: 26,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.fromBorderSide(
+                  BorderSide(
+                    color: Color(0xFF2C2C2C),
+                    width: 2,
+                  ),
+                ),
+                color: Colors.white,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.question_mark, color: Color(0xFF2C2C2C), size: 16),
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Ayuda', style: TextStyle(color: Color(0xFF1A4E85), fontWeight: FontWeight.bold)),
+                      content:
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Aquí puedes ver todas tus tareas asignadas. Toca una tarea para ver los detalles, enviar comentarios o marcarla como completada.', textAlign: TextAlign.justify),
+                          SizedBox(height: 8),
+                          Text('Dentro de cada tarea, podrás ver una barra de color que indica el tiempo restante para completarla.', textAlign: TextAlign.justify),
+                          SizedBox(height: 8),
+                          Text('Los colores de la barra indican lo siguiente:', style: TextStyle(fontWeight: FontWeight.bold)),
+                          SizedBox(height: 8),
+                          Container(
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Color(0xFF4CAF50),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text('Verde: Tarea en progreso con un tiempo de progreso menor al 70%.', textAlign: TextAlign.justify),
+                          SizedBox(height: 8),
+                          Container(
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Color(0xFFFDD634),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text('Amarillo: Tarea en progreso con un tiempo de progreso mayor o igual al 70%.', textAlign: TextAlign.justify),
+                          SizedBox(height: 8),
+                          Container(
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Color(0xFFF44336),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text('Rojo: Tarea vencida', textAlign: TextAlign.justify),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('Cerrar', style: TextStyle(color: Color(0xFF1A4E85))),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
       ),
       body: BlocBuilder<TaskBloc, TaskState>(
         builder: (context, state) {
