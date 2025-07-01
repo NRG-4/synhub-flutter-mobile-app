@@ -112,8 +112,8 @@ class _LoginState extends State<Login> {
                   TextField(
                     controller: _usernameController,
                     decoration: const InputDecoration(
-                      labelText: 'Insert User',
-                      hintText: 'User',
+                      labelText: 'Insert Username',
+                      hintText: 'Username',
                       prefixIcon: Icon(Icons.person, color: Colors.grey),
                       filled: true,
                       fillColor: Color(0xFFF3F3F3),
