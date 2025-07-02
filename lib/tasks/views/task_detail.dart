@@ -158,12 +158,12 @@ class TaskDetail extends StatelessWidget {
       final due = _parseDateWithTimeZone(dueDate);
       final now = DateTime.now();
 
-      final totalDays = due.difference(created).inDays.toDouble();
-      final daysPassed = now.difference(created).inDays.toDouble();
+      final totalSeconds = due.difference(created).inSeconds.toDouble();
+      final secondsPassed = now.difference(created).inSeconds.toDouble();
 
-      if (totalDays <= 0) return const Color(0xFFF44336);
+      if (totalSeconds <= 0) return const Color(0xFFF44336);
 
-      final progress = (daysPassed / totalDays).clamp(0.0, 1.0);
+      final progress = (secondsPassed / totalSeconds).clamp(0.0, 1.0);
 
       if (now.isAfter(due)) {
         return const Color(0xFFF44336); // Rojo - Tarea vencida
