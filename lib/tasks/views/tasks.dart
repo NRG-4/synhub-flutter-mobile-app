@@ -316,8 +316,9 @@ class _TasksScreenState extends State<TasksScreen> {
       final createdAt = _parseDateWithTimeZone(task.createdAt);
       final dueDate = _parseDateWithTimeZone(task.dueDate);
 
-      final format = DateFormat('dd/MM/yyyy');
-      return '${format.format(createdAt)} - ${format.format(dueDate)}';
+      final format1 = DateFormat('dd/MM/yyyy');
+      final format2 = DateFormat('dd/MM/yyyy HH:mm');
+      return '${format1.format(createdAt)} - ${format2.format(dueDate)}';
     } catch (e) {
       // Si falla el parsing, usar los primeros 10 caracteres
       return '${task.createdAt.substring(0, 10)} - ${task.dueDate.substring(0, 10)}';

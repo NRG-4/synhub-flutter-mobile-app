@@ -65,7 +65,7 @@ class GroupScreen extends StatelessWidget {
               child:
                 Padding(
                   padding: const EdgeInsets.all(14.0),
-                  child: Text('#${group.code}', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white)),
+                  child: Text('#${group.code}', style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white)),
                 )
             ),
           ),
@@ -80,7 +80,7 @@ class GroupScreen extends StatelessWidget {
                   child: Text(group.description,
                       style:
                       TextStyle(
-                          fontSize: 22,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                       ),
@@ -118,7 +118,7 @@ class GroupScreen extends StatelessWidget {
                           backgroundImage: NetworkImage(member.imgUrl),
                         ),
                         title: Text('${member.name} ${member.surname}'),
-                        subtitle: Text(member.username),
+                        subtitle: Text(member.username, style: TextStyle(color: Colors.grey[500])),
                       );
                     }).toList(),
                   ),
