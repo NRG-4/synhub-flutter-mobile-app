@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synhub/shared/views/Login.dart';
 import '../../group/views/group_screen.dart';
-import '../../statistics/views/statistics.dart';
+import '../../statistics/views/statistics_screen.dart';
 import '../../tasks/views/task_screen.dart';
 import '../../validations/views/request_&_validations.dart';
 import '../../shared/client/api_client.dart';
@@ -29,6 +29,7 @@ class _HomeState extends State<Home> {
   String _name = '';
   String _surname = '';
   String _imgUrl = '';
+  String _memberId = '';
 
   @override
   void initState() {
@@ -48,6 +49,7 @@ class _HomeState extends State<Home> {
             _name = state.member.name;
             _surname = state.member.surname;
             _imgUrl = state.member.imgUrl;
+            _memberId = state.member.id.toString();
           });
         }
       },
@@ -73,7 +75,19 @@ class _HomeState extends State<Home> {
             } else if (route == 'Tasks') {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const TasksScreen()));
             } else if (route == 'AnalyticsAndReports') {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const StatisticsScreen()));
+              if (_memberId.isNotEmpty) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => StatisticsScreen(
+                      memberId: _memberId,
+                      memberName: '$_name $_surname',
+                      username: _name,
+                      profileImageUrl: _imgUrl,
+                    ),
+                  ),
+                );
+              }
             } else if (route == 'RequestsAndValidations') {
               Navigator.push(context, MaterialPageRoute(builder: (context) => const RequestAndValidationsScreen()));
             } else if (route == 'Login') {
