@@ -12,6 +12,7 @@ class MemberBloc extends Bloc<MemberEvent, MemberState> {
   MemberBloc({required this.memberService}) : super(MemberInitial()) {
     on<FetchMemberDetailsEvent>(_onFetchMemberDetails);
     on<LoadMemberGroupEvent>(_onLoadMemberGroup);
+    on<LeaveGroupEvent>(_onLeaveGroup);
   }
 
   Future<void> _onFetchMemberDetails(
@@ -51,6 +52,23 @@ class MemberBloc extends Bloc<MemberEvent, MemberState> {
       }
     } catch (e) {
       emit(MemberError('Error loading member group: $e'));
+    }
+  }
+
+  Future<void> _onLeaveGroup(
+      LeaveGroupEvent event,
+      Emitter<MemberState> emit,
+      ) async {
+    emit(MemberLoading());
+    try {
+      final success = await memberService.leaveGroup();
+      if (success) {
+        emit(GroupLeftSuccessfully());
+      } else {
+        emit(MemberError('Failed to leave group'));
+      }
+    } catch (e) {
+      emit(MemberError('Error leaving group: $e'));
     }
   }
 }

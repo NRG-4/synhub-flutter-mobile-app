@@ -26,3 +26,5 @@ class MemberGroupLoaded extends MemberState {
 }
 
 class MemberNoGroup extends MemberState {}
+
+class GroupLeftSuccessfully extends MemberState {}

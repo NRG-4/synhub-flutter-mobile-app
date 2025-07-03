@@ -10,4 +10,9 @@ class MemberService {
   Future<http.Response> getMemberGroup() async {
     return await ApiClient.get('member/group');
   }
+
+  Future<bool> leaveGroup() async {
+    final response = await ApiClient.delete('member/group/leave');
+    return response.statusCode == 204;
+  }
 }
