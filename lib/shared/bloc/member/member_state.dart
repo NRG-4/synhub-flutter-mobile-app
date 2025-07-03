@@ -1,4 +1,5 @@
 import '../../../group/models/group.dart';
+import '../../../tasks/models/task.dart';
 import '../../models/member.dart';
 
 abstract class MemberState {}
@@ -28,3 +29,18 @@ class MemberGroupLoaded extends MemberState {
 class MemberNoGroup extends MemberState {}
 
 class GroupLeftSuccessfully extends MemberState {}
+
+class NextTaskLoaded extends MemberState {
+  final Task task;
+
+  NextTaskLoaded(this.task);
+}
+
+class NoNextTaskAvailable extends MemberState {}
+
+class NextTaskError extends MemberState {
+  final String message;
+  NextTaskError(this.message);
+}
+
+class NextTaskLoading extends MemberState {}

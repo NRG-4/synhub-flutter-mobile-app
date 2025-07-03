@@ -13,6 +13,7 @@ class MemberBloc extends Bloc<MemberEvent, MemberState> {
     on<FetchMemberDetailsEvent>(_onFetchMemberDetails);
     on<LoadMemberGroupEvent>(_onLoadMemberGroup);
     on<LeaveGroupEvent>(_onLeaveGroup);
+    on<LoadNextTaskEvent>(_onLoadNextTask);
   }
 
   Future<void> _onFetchMemberDetails(
@@ -69,6 +70,23 @@ class MemberBloc extends Bloc<MemberEvent, MemberState> {
       }
     } catch (e) {
       emit(MemberError('Error leaving group: $e'));
+    }
+  }
+
+  Future<void> _onLoadNextTask(
+      LoadNextTaskEvent event,
+      Emitter<MemberState> emit,
+      ) async {
+    emit(NextTaskLoading());
+    try {
+      final task = await memberService.getNextTask();
+      if (task != null) {
+        emit(NextTaskLoaded(task));
+      } else {
+        emit(NoNextTaskAvailable());
+      }
+    } catch (e) {
+      emit(NextTaskError('Error loading next task: $e'));
     }
   }
 }

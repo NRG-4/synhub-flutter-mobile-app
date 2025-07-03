@@ -3,12 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synhub/shared/views/Login.dart';
 import '../../group/views/group_screen.dart';
 import '../../statistics/views/statistics.dart';
-import '../../tasks/views/tasks.dart';
+import '../../tasks/views/tasks_screen.dart';
 import '../../validations/views/request_&_validations.dart';
 import '../../shared/client/api_client.dart';
 import '../bloc/member/member_bloc.dart';
 import '../bloc/member/member_event.dart';
 import '../bloc/member/member_state.dart';
+import '../services/member_service.dart';
 
 const List<Map<String, dynamic>> drawerOptions = [
   {'label': 'Grupo', 'icon': Icons.groups, 'route': 'Group'},
@@ -55,7 +56,7 @@ class _HomeState extends State<Home> {
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.white,
-          title: const Text('SynHub'),
+          title: const Text('SynHub', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black)),
         ),
         drawerEnableOpenDragGesture: true,
         drawer: _CustomDrawer(
@@ -84,8 +85,72 @@ class _HomeState extends State<Home> {
         ),
         body: PopScope(
           canPop: false,
-          child: const Center(
-            child: Text('Bienvenido a SynHub'),
+          child: BlocProvider<MemberBloc>(
+            create: (context) => MemberBloc(memberService: MemberService())..add(LoadNextTaskEvent()),
+            child: BlocBuilder<MemberBloc, MemberState>(
+              builder: (context, state) {
+                if (state is NextTaskLoading) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (state is NextTaskLoaded) {
+                  final task = state.task;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Tu tarea más cercana', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A4E85))),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: Card(
+                            color: Color(0xFFF5F5F5),
+                            elevation: 5,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(task.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 8),
+                                  Text(task.description, style: const TextStyle(fontSize: 16)),
+                                  const SizedBox(height: 8),
+                                  Text('Fecha de entrega: ' + task.dueDate, style: const TextStyle(fontSize: 14)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                } else if (state is NoNextTaskAvailable) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Tu tarea más cercana', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A4E85))),
+                      const SizedBox(height: 16),
+                      Card(
+                        color: Color(0xFF1A4E85),
+                        elevation: 5,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text('No tienes tareas próximas', style: const TextStyle(fontSize: 16, color: Colors.white)),
+                        ),
+                      ),
+                    ],
+                  );
+                } else if (state is NextTaskError) {
+                  return Center(child: Text(state.message));
+                }
+                return Center(child: CircularProgressIndicator());
+              },
+            ),
           ),
         ),
       ),
