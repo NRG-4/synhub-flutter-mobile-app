@@ -96,6 +96,26 @@ class _TasksScreenState extends State<TasksScreen> {
                           ),
                           SizedBox(height: 8),
                           Text('Rojo: Tarea vencida', textAlign: TextAlign.justify),
+                          SizedBox(height: 8),
+                          Container(
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Color(0xFFFF832A),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text('Naranja: Tarea pendiente de una solicitud o comentario', textAlign: TextAlign.justify),
+                          SizedBox(height: 8),
+                          Container(
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Color(0xFF4A90E2),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text('Azul: Tarea terminada o completada (ya validada)', textAlign: TextAlign.justify),
                         ],
                       ),
                       actions: [
@@ -128,37 +148,62 @@ class _TasksScreenState extends State<TasksScreen> {
   }
 
   Widget _buildTaskContent(List<Task> tasks) {
+    final inProgressTasks = tasks.where((t) => t.status == "IN_PROGRESS").toList();
+    final completedTasks = tasks.where((t) => t.status == "COMPLETED").toList();
+    final expiredTasks = tasks.where((t) => t.status == "EXPIRED").toList();
+    final doneTasks = tasks.where((t) => t.status == "DONE").toList();
+    final onHoldTasks = tasks.where((t) => t.status == "ON_HOLD").toList();
+
+    Widget buildSection(String title, List<Task> sectionTasks) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A4E85))),
+          ),
+          sectionTasks.isEmpty
+              ? Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A4E85),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Center(
+              child: Text(
+                'No hay tareas en esta sección',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
+          )
+              : Column(
+            children: sectionTasks.map((task) => _buildTaskCard(task)).toList(),
+          ),
+        ],
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(20.0),
-      child: tasks.isEmpty
-          ? Center(
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A4E85),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Text(
-            'No hay tareas asignadas',
-            style: TextStyle(
-              fontSize: 20,
-              color: Colors.white,
-            ),
-          ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            buildSection('Tareas en progreso', inProgressTasks),
+            buildSection('Tareas vencidas', expiredTasks),
+            buildSection('Tareas en espera de validación', onHoldTasks),
+            buildSection('Tareas marcadas como hechas', completedTasks),
+            buildSection('Tareas completadas', doneTasks),
+          ],
         ),
-      )
-          : ListView.builder(
-        itemCount: tasks.length,
-        itemBuilder: (context, index) {
-          final task = tasks[index];
-          return _buildTaskCard(task);
-        },
       ),
     );
   }
 
   Widget _buildTaskCard(Task task) {
-    final progressColor = _getDividerColor(task.createdAt, task.dueDate);
+    final progressColor = _getDividerColor(task.createdAt, task.dueDate, task.status);
     final formattedDates = _formatTaskDates(task);
 
     return InkWell(
@@ -235,34 +280,34 @@ class _TasksScreenState extends State<TasksScreen> {
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
-              const SizedBox(height: 12),
-              Center(
-                child: ElevatedButton(
-                  onPressed: (){},
+              if (task.status == "IN_PROGRESS") ...[
+                const SizedBox(height: 12),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFFFF9800),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child:
-                    Text("Enviar un comentario", style: TextStyle(fontSize: 18, color: Colors.white))
+                    child: Text("Enviar un comentario", style: TextStyle(fontSize: 18, color: Colors.white)),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Center(
-                child: ElevatedButton(
-                    onPressed: (){},
+                const SizedBox(height: 12),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {},
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xff4CAF50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child:
-                    Text("Marcar como completada", style: TextStyle(fontSize: 18, color: Colors.white))
+                    child: Text("Marcar como completada", style: TextStyle(fontSize: 18, color: Colors.white)),
+                  ),
                 ),
-              )
+              ],
             ],
           ),
         ),
@@ -270,7 +315,11 @@ class _TasksScreenState extends State<TasksScreen> {
     );
   }
 
-  Color _getDividerColor(String createdAt, String dueDate) {
+  Color _getDividerColor(String createdAt, String dueDate, String status) {
+    if (status == "COMPLETED") return Color(0xFF4CAF50); // Verde para tareas completadas
+    if (status == "ON_HOLD") return Color(0xFFFF832A); // Naranja para tareas en espera
+    if (status == "DONE") return Color(0xFF4A90E2); // Azul para tareas hechas
+    if(status == "EXPIRED") return Color(0xFFF44336); // Rojo para tareas vencidas
     try {
       // Parsear fechas considerando la zona horaria
       final created = _parseDateWithTimeZone(createdAt);
