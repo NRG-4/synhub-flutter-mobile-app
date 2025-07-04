@@ -229,7 +229,7 @@ class _HomeState extends State<Home> {
         return const Color(0xFFFDD634); // Amarillo - Progreso crítico
       }
     } catch (e) {
-      return const Color(0xFF4CAF50); // Verde por defecto si hay error
+      return const Color(0xFF939393); // Verde por defecto si hay error
     }
   }
 

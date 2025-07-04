@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../shared/bloc/member/member_bloc.dart';
+import '../../shared/client/api_client.dart';
+import '../../shared/services/member_service.dart';
+import '../../shared/views/Login.dart';
+import '../../shared/views/home.dart';
 import '../bloc/group/group_bloc.dart';
 import '../bloc/group/group_event.dart';
 import '../bloc/group/group_state.dart';
@@ -92,7 +97,7 @@ class _SearchGroupState extends State<SearchGroup> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Cancelar'),
+                child: const Text('Cancelar', style: TextStyle(color: Colors.red)),
               ),
               BlocBuilder<InvitationBloc, InvitationState>(
                 builder: (context, state) {
@@ -156,144 +161,250 @@ class _SearchGroupContentState extends State<_SearchGroupContent> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
-        child: BlocBuilder<InvitationBloc, InvitationState>(
-          builder: (context, state) {
-            if (state is InvitationLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is InvitationError) {
-              return Center(child: Text(state.message, style: const TextStyle(color: Colors.red)));
-            } else if (state is MemberInvitationLoaded) {
-              final invitation = state.invitation;
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+      body: PopScope(
+        canPop: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
+          child: BlocBuilder<InvitationBloc, InvitationState>(
+            builder: (context, state) {
+              if (state is InvitationLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is InvitationError) {
+                return Center(child: Text(state.message, style: const TextStyle(color: Colors.red)));
+              } else if (state is MemberInvitationLoaded) {
+                final invitation = state.invitation;
+                return Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('Tienes una invitación pendiente', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                              SizedBox(height: 10),
+                              Text('Grupo: ${invitation.group.name}', style: TextStyle(fontSize: 18)),
+                              SizedBox(height: 10),
+                              Text('Código: #${invitation.group.code}', style: TextStyle(fontSize: 16, color: Colors.grey[800])),
+                              SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: () {
+                                  context.read<InvitationBloc>().add(CancelMemberInvitationEvent());
+                                },
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                                child: const Text('Cancelar solicitud', style: TextStyle(color: Colors.white)),
+                              ),
+
+                            ],
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 60),
+                      Column(
                         children: [
-                          Text('Tienes una invitación pendiente', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                          SizedBox(height: 10),
-                          Text('Grupo: ${invitation.group.name}', style: TextStyle(fontSize: 18)),
-                          SizedBox(height: 10),
-                          Text('Código: #${invitation.group.code}', style: TextStyle(fontSize: 16, color: Colors.grey[800])),
+                          ElevatedButton(
+                            onPressed: () async {
+                              final memberService = MemberService();
+                              try {
+                                final response = await memberService.getMemberGroup();
+                                if (!mounted) return;
+                                if (response.statusCode == 200) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => BlocProvider(
+                                        create: (_) => MemberBloc(memberService: MemberService()),
+                                        child: const Home(),
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  final invitationBloc = BlocProvider.of<InvitationBloc>(context, listen: false);
+                                  invitationBloc.add(LoadMemberInvitationEvent());
+                                  await Future.delayed(const Duration(milliseconds: 300));
+                                  final invitationState = invitationBloc.state;
+                                  if (invitationState is MemberInvitationLoaded && invitationState.invitation != null) {
+                                    ScaffoldMessenger.of(context).clearSnackBars();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Tienes una invitación pendiente.')),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).clearSnackBars();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Tu invitación fue rechazada.'), backgroundColor: Colors.red),
+                                    );
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const SearchGroup()),
+                                    );
+                                  }
+                                }
+                              } catch (e) {
+                                if (!mounted) return;
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const SearchGroup()),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF4CAF50)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Center(
+                                child: Text(
+                                  'Sincronizar el estado de la invitación',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                          ),
                           SizedBox(height: 20),
                           ElevatedButton(
                             onPressed: () {
-                              context.read<InvitationBloc>().add(CancelMemberInvitationEvent());
+                              ApiClient.resetToken();
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const Login()));
                             },
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                            child: const Text('Cancelar solicitud', style: TextStyle(color: Colors.white)),
-                          ),
+                            style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFFF832A)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Center(
+                                  child:
+                                  Text('Cerrar Sesión',
+                                    style:
+                                      TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16
+                                      ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                              ),
+                            ),
+                          )
                         ],
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              );
-            } else {
-              // NoMemberInvitation o estado inicial: mostrar formulario de búsqueda
-              return Form(
-                key: widget.formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Únete a un grupo',
-                      style: TextStyle(
-                        fontSize: 40,
-                        color: Color(0xFF000000),
-                        fontWeight: FontWeight.bold,
+                );
+              } else {
+                // NoMemberInvitation o estado inicial: mostrar formulario de búsqueda
+                return Form(
+                  key: widget.formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Únete a un grupo',
+                        style: TextStyle(
+                          fontSize: 40,
+                          color: Color(0xFF000000),
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: widget.codeController,
-                      decoration: InputDecoration(
-                        labelText: 'Código del grupo',
-                        hintText: 'Ingresa el código de 6 dígitos',
-                        prefixIcon: const Icon(Icons.code, color: Colors.grey),
-                        filled: true,
-                        fillColor: const Color(0xFFF3F3F3),
-                        border: const OutlineInputBorder(),
+                      const SizedBox(height: 20),
+                      TextFormField(
+                        controller: widget.codeController,
+                        decoration: InputDecoration(
+                          labelText: 'Código del grupo',
+                          hintText: 'Ingresa el código de 6 dígitos',
+                          prefixIcon: const Icon(Icons.code, color: Colors.grey),
+                          filled: true,
+                          fillColor: const Color(0xFFF3F3F3),
+                          border: const OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Por favor ingresa un código';
+                          }
+                          if (value.length != 9) {
+                            return 'El código debe tener 6 caracteres';
+                          }
+                          return null;
+                        },
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingresa un código';
-                        }
-                        if (value.length != 9) {
-                          return 'El código debe tener 6 caracteres';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    BlocConsumer<GroupBloc, GroupState>(
-                      listener: (context, state) {
-                        if (state is GroupFound) {
-                          widget.showGroupDialog(context, state.group);
-                        } else if (state is GroupError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(state.error),
-                              backgroundColor: Colors.red,
+                      const SizedBox(height: 20),
+                      BlocConsumer<GroupBloc, GroupState>(
+                        listener: (context, state) {
+                          if (state is GroupFound) {
+                            widget.showGroupDialog(context, state.group);
+                          } else if (state is GroupError) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(state.error),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        },
+                        builder: (context, state) {
+                          return ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF4A90E2),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              minimumSize: const Size(double.infinity, 50),
+                            ),
+                            onPressed: state is GroupLoading
+                                ? null
+                                : () {
+                              if (widget.formKey.currentState!.validate()) {
+                                context.read<GroupBloc>().add(
+                                  SearchGroupByCodeEvent(widget.codeController.text),
+                                );
+                              }
+                            },
+                            child: state is GroupLoading
+                                ? const CircularProgressIndicator(color: Colors.white)
+                                : const Text(
+                              'Buscar grupo',
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           );
-                        }
-                      },
-                      builder: (context, state) {
-                        return ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4A90E2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            minimumSize: const Size(double.infinity, 50),
+                        },
+                      ),
+                      if (widget.codeController.text.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 20),
+                          child: Text(
+                            'Pide el código al administrador del grupo',
+                            style: TextStyle(color: Colors.grey),
                           ),
-                          onPressed: state is GroupLoading
-                              ? null
-                              : () {
-                            if (widget.formKey.currentState!.validate()) {
-                              context.read<GroupBloc>().add(
-                                SearchGroupByCodeEvent(widget.codeController.text),
-                              );
-                            }
-                          },
-                          child: state is GroupLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
-                              : const Text(
-                            'Buscar grupo',
-                            style: TextStyle(
-                              fontSize: 20,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    if (widget.codeController.text.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 20),
-                        child: Text(
-                          'Pide el código al administrador del grupo',
-                          style: TextStyle(color: Colors.grey),
+                        ),
+                      Spacer(),
+                      ElevatedButton(
+                        onPressed: () {
+                          ApiClient.resetToken();
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const Login()));
+                        },
+                        style: ElevatedButton.styleFrom(backgroundColor: Color(0xFFFF832A)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: const Text('Cerrar Sesión', style: TextStyle(color: Colors.white, fontSize: 20)),
                         ),
                       ),
-                  ],
-                ),
-              );
-            }
-          },
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
         ),
       ),
     );
