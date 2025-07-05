@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:synhub/shared/views/Login.dart';
 import '../../group/views/group_screen.dart';
-import '../../statistics/views/statistics.dart';
+import '../../statistics/views/statistics_screen.dart';
 import '../../tasks/models/task.dart';
 import '../../tasks/views/tasks_screen.dart';
 import '../../validations/views/request_&_validations.dart';
