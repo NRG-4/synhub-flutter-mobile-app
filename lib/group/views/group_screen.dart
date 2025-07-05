@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:synhub/group/bloc/group/group_event.dart';
 
+import '../../shared/bloc/member/member_bloc.dart';
+import '../../shared/bloc/member/member_event.dart' hide LoadMemberGroupEvent;
+import '../../shared/bloc/member/member_state.dart' hide MemberGroupLoaded;
+import '../../shared/client/api_client.dart';
+import '../../shared/services/member_service.dart';
+import '../../shared/views/Login.dart';
 import '../bloc/group/group_bloc.dart';
 import '../bloc/group/group_state.dart';
 import '../models/group.dart';
@@ -12,9 +18,15 @@ class GroupScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => GroupBloc(groupService: GroupService())
-        ..add(LoadMemberGroupEvent()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<GroupBloc>(
+          create: (context) => GroupBloc(groupService: GroupService())..add(LoadMemberGroupEvent()),
+        ),
+        BlocProvider<MemberBloc>(
+          create: (context) => MemberBloc(memberService: MemberService()),
+        ),
+      ],
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: PreferredSize(
@@ -36,23 +48,44 @@ class GroupScreen extends StatelessWidget {
             },
           ),
         ),
-        body: BlocBuilder<GroupBloc, GroupState>(
-          builder: (context, state) {
-            if (state is GroupLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is MemberGroupLoaded) {
-              return _buildGroupContent(state.group);
-            } else if (state is GroupError) {
-              return Center(child: Text(state.error));
+        body: BlocListener<MemberBloc, MemberState>(
+          listener: (context, state) {
+            if (state is GroupLeftSuccessfully) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Has abandonado el grupo exitosamente.')),
+              );
+              ApiClient.resetToken();
+              Future.delayed(const Duration(milliseconds: 500), () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Login()),
+                  (route) => false,
+                );
+              });
+            } else if (state is MemberError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
             }
-            return const Center(child: Text('No hay datos'));
           },
+          child: BlocBuilder<GroupBloc, GroupState>(
+            builder: (context, state) {
+              if (state is GroupLoading) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (state is MemberGroupLoaded) {
+                return _buildGroupContent(context, state.group);
+              } else if (state is GroupError) {
+                return Center(child: Text(state.error));
+              }
+              return const Center(child: Text('No hay datos'));
+            },
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildGroupContent(Group group) {
+  Widget _buildGroupContent(BuildContext context, Group group) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
@@ -108,7 +141,7 @@ class GroupScreen extends StatelessWidget {
                 color: Colors.white,
                 elevation: 5,
                   child: SizedBox(
-                  height: 400, // Altura máxima para evitar desbordes
+                  height: 350, // Altura máxima para evitar desbordes
                   child: ListView(
                     shrinkWrap: true,
                     physics: AlwaysScrollableScrollPhysics(),
@@ -124,6 +157,49 @@ class GroupScreen extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: OutlinedButton(
+              onPressed: () {
+                final parentContext = context;
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('¿Abandonar grupo?', style: TextStyle(color: Color(0xFF1A4E85), fontWeight: FontWeight.bold)),
+                    content: const Text('¿Estás seguro de que deseas abandonar este grupo? Esta acción no se puede deshacer.'),
+                    actions: [
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          backgroundColor: Color(0xFF1A4E85),
+                        ),
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Cancelar', style: TextStyle(color: Colors.white)),
+                      ),
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          backgroundColor: Color(0xFFF44336),
+                        ),
+                        onPressed: () async {
+                          Navigator.of(context, rootNavigator: true).pop();
+                          BlocProvider.of<MemberBloc>(parentContext, listen: false).add(LeaveGroupEvent());
+                        },
+                        child: const Text('Abandonar', style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              style: OutlinedButton.styleFrom(
+                backgroundColor: Color(0xFFF44336),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+              child: Text('Abandonar Grupo', style: TextStyle(fontSize: 18)),
             ),
           )
         ],
