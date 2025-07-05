@@ -119,14 +119,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                                         fontSize: 14,
                                       ),
                                     ),
-                                    const SizedBox(height: 2),
-                                    const Text(
-                                      'Resumen de tu desempeño',
-                                      style: TextStyle(
-                                        color: Colors.black54,
-                                        fontSize: 14,
-                                      ),
-                                    ),
                                   ],
                                 ),
                               ),
@@ -135,72 +127,108 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         ),
                       ),
                       const SizedBox(height: 16),
+                      // Cajas de estado de tareas
                       SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            _StatCard(label: 'Completadas', value: stats.overview.completed.toString(), color: Colors.green),
-                            _StatCard(label: 'En progreso', value: stats.overview.inProgress.toString(), color: Colors.blue),
-                            _StatCard(label: 'Pendientes', value: stats.overview.pending.toString(), color: Colors.orange),
-                            _StatCard(label: 'Atrasadas', value: stats.overview.overdue.toString(), color: Colors.red),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      _SectionCard(
-                        icon: Icons.bar_chart,
-                        title: 'Distribución de Tareas',
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Total: ${_memberTasks.length}', style: const TextStyle(fontWeight: FontWeight.bold, color: kBluePrimary)),
-                            const SizedBox(height: 8),
-                            if (_memberTasks.isEmpty)
-                              const Text('No hay tareas asignadas.', style: TextStyle(color: Colors.black54)),
-                            if (_memberTasks.isNotEmpty)
-                              ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: _memberTasks.length,
-                                itemBuilder: (context, idx) {
-                                  final task = _memberTasks[idx];
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '${idx + 1}. ',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: kBluePrimary,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: Text(
-                                            task.title,
-                                            style: const TextStyle(fontSize: 14, color: Colors.black87),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
+                            _StatCard(
+                              label: 'Marcadas como Completadas',
+                              value: stats.overview.completed.toString(),
+                              color: Colors.green,
+                            ),
+                            _StatCard(
+                              label: 'Terminadas',
+                              value: (stats.overview.done ?? 0).toString(),
+                              color: Colors.teal,
+                            ),
+                            _StatCard(
+                              label: 'En progreso',
+                              value: stats.overview.inProgress.toString(),
+                              color: Colors.blue,
+                            ),
+                            _StatCard(
+                              label: 'Pendientes',
+                              value: stats.overview.pending.toString(),
+                              color: Colors.orange,
+                            ),
+                            _StatCard(
+                              label: 'Atrasadas',
+                              value: stats.overview.overdue.toString(),
+                              color: Colors.red,
+                            ),
                           ],
                         ),
                       ),
                       const SizedBox(height: 18),
+                      // Distribución de tareas debajo de las cajas de estado
+                      _SectionCard(
+                        icon: Icons.list_alt,
+                        title: 'Distribución de Tareas',
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxHeight: 200,
+                          ),
+                          child: _loadingTasks
+                              ? const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                                  child: Center(child: CircularProgressIndicator()),
+                                )
+                              : _memberTasks.isEmpty
+                                  ? const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                                      child: Text('No hay tareas asignadas.', style: TextStyle(color: Colors.black54)),
+                                    )
+                                  : Scrollbar(
+                                      thumbVisibility: true,
+                                      child: ListView.builder(
+                                        shrinkWrap: true,
+                                        physics: const AlwaysScrollableScrollPhysics(),
+                                        itemCount: _memberTasks.length,
+                                        itemBuilder: (context, index) {
+                                          final task = _memberTasks[index];
+                                          return Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 2.0),
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  '${index + 1}.',
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: kBluePrimary,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Expanded(
+                                                  child: Text(
+                                                    task.title,
+                                                    style: const TextStyle(
+                                                      fontSize: 15,
+                                                      color: Colors.black87,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      // Otras secciones
                       _SectionCard(
                         icon: Icons.build,
-                        title: 'Tareas Reprogramadas',
+                        title: 'Cantidad total de reprogramaciones',
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _MetricRow(label: 'Reprogramadas', value: stats.rescheduledTasks.rescheduled.toString()),
-                            _MetricRow(label: 'No reprogramadas', value: stats.rescheduledTasks.notRescheduled.toString()),
+                            _MetricRow(
+                              label: 'Reprogramadas',
+                              value: stats.rescheduledTasks.rescheduled.toString(),
+                            )
                           ],
                         ),
                       ),
@@ -230,7 +258,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             } else if (state is StatisticsError) {
               return Center(child: Text(state.message));
             }
-            return const Center(child: Text('No data'));
+            // Cambia el mensaje por defecto para mayor claridad
+            return const Center(child: CircularProgressIndicator());
           },
         ),
       ),
@@ -274,20 +303,35 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Soluciona overflow para textos largos como 'Marcadas como Completadas'
     return Card(
       color: vibrantBackground,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 2,
       margin: const EdgeInsets.symmetric(horizontal: 8),
       child: SizedBox(
-        width: 100,
+        width: 110,
         height: 90,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: color)),
+            Text(
+              value,
+              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: color),
+            ),
             const SizedBox(height: 6),
-            Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                child: Text(
+                  label,
+                  style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 13),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -314,15 +358,18 @@ class _SectionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start, // <-- Añadido para alinear arriba
               children: [
                 Icon(icon, color: kBluePrimary),
                 const SizedBox(width: 10),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: kBluePrimary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                Expanded( // <-- Añadido para evitar overflow en títulos largos
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      color: kBluePrimary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
                   ),
                 ),
               ],
