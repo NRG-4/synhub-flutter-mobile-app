@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:synhub/shared/views/Login.dart';
+import 'package:synhub/statistics/bloc/statistics_bloc.dart';
+import 'package:synhub/statistics/bloc/statistics_event.dart';
+import 'package:synhub/statistics/bloc/statistics_state.dart';
+import 'package:synhub/statistics/services/statistics_service.dart';
+
 import '../../group/views/group_screen.dart';
 import '../../statistics/views/statistics_screen.dart';
 import '../../tasks/models/task.dart';
@@ -106,6 +111,88 @@ class _HomeState extends State<Home> {
             create: (context) => MemberBloc(memberService: MemberService())..add(LoadNextTaskEvent()),
             child: BlocBuilder<MemberBloc, MemberState>(
               builder: (context, state) {
+                // --- MÉTRICAS RESUMIDAS ---
+                Widget metricsSummary = (_memberId.isNotEmpty)
+                    ? BlocProvider(
+                        create: (_) => StatisticsBloc(StatisticsService())..add(LoadMemberStatistics(_memberId)),
+                        child: BlocBuilder<StatisticsBloc, StatisticsState>(
+                          builder: (context, statsState) {
+                            if (statsState is StatisticsLoaded) {
+                              final overview = statsState.statistics.overview;
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => StatisticsScreen(
+                                        memberId: _memberId,
+                                        memberName: '$_name $_surname',
+                                        username: _name,
+                                        profileImageUrl: _imgUrl,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Card(
+                                  color: Color(0xFF1A4E85),
+                                  elevation: 4,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Resumen de métricas',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            SizedBox(height: 6),
+                                            Row(
+                                              children: [
+                                                Icon(Icons.check_circle, color: Colors.greenAccent, size: 20),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  'Completadas: ${overview.completed}',
+                                                  style: TextStyle(color: Colors.white, fontSize: 14),
+                                                ),
+                                                SizedBox(width: 16),
+                                                Icon(Icons.autorenew, color: Colors.blueAccent, size: 20),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  'En progreso: ${overview.inProgress}',
+                                                  style: TextStyle(color: Colors.white, fontSize: 14),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            } else if (statsState is StatisticsLoading) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Center(child: CircularProgressIndicator()),
+                              );
+                            } else {
+                              return SizedBox.shrink();
+                            }
+                          },
+                        ),
+                      )
+                    : SizedBox.shrink();
+                // --- FIN MÉTRICAS RESUMIDAS ---
+
                 if (state is NextTaskLoading) {
                   return Center(child: CircularProgressIndicator());
                 } else if (state is NextTaskLoaded) {
@@ -115,6 +202,10 @@ class _HomeState extends State<Home> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // --- Insertar resumen de métricas aquí ---
+                        metricsSummary,
+                        if (_memberId.isNotEmpty) SizedBox(height: 18),
+                        // --- Fin resumen de métricas ---
                         Text('Tu tarea más cercana a vencer', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A4E85))),
                         const SizedBox(height: 16),
                         SizedBox(
@@ -139,11 +230,11 @@ class _HomeState extends State<Home> {
                                     ),
                                   ),
                                   ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      maxHeight: 100,
-                                      minWidth: double.infinity,
-                                    ),
-                                    child: Card(
+                                      constraints: BoxConstraints(
+                                        maxHeight: 100,
+                                        minWidth: double.infinity,
+                                      ),
+                                      child: Card(
                                         color: Colors.white,
                                         margin: EdgeInsets.symmetric(vertical: 10),
                                         elevation: 5,
@@ -155,7 +246,7 @@ class _HomeState extends State<Home> {
                                           padding: const EdgeInsets.all(15.0),
                                           child: Text(task.description, style: const TextStyle(fontSize: 16)),
                                         ),
-                                    )
+                                      )
                                   ),
                                   SizedBox(height: 12),
                                   Center(
@@ -186,6 +277,10 @@ class _HomeState extends State<Home> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // --- Insertar resumen de métricas aquí ---
+                        metricsSummary,
+                        if (_memberId.isNotEmpty) SizedBox(height: 18),
+                        // --- Fin resumen de métricas ---
                         Text('Tu tarea más cercana', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A4E85))),
                         const SizedBox(height: 16),
                         SizedBox(
@@ -325,12 +420,12 @@ class _CustomDrawer extends StatelessWidget {
                 child: ClipOval(
                   child: imgUrl.isNotEmpty
                       ? Image.network(
-                          imgUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.person, size: 80, color: Colors.white);
-                          },
-                        )
+                    imgUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(Icons.person, size: 80, color: Colors.white);
+                    },
+                  )
                       : const Icon(Icons.person, size: 80, color: Colors.white),
                 ),
               ),
