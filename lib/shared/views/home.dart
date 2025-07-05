@@ -6,7 +6,7 @@ import '../../group/views/group_screen.dart';
 import '../../statistics/views/statistics_screen.dart';
 import '../../tasks/models/task.dart';
 import '../../tasks/views/tasks_screen.dart';
-import '../../validations/views/request_&_validations.dart';
+import '../../requests/views/requests_screen.dart';
 import '../../shared/client/api_client.dart';
 import '../bloc/member/member_bloc.dart';
 import '../bloc/member/member_event.dart';
@@ -15,7 +15,7 @@ import '../services/member_service.dart';
 
 const List<Map<String, dynamic>> drawerOptions = [
   {'label': 'Grupo', 'icon': Icons.groups, 'route': 'Group'},
-  {'label': 'Solicitudes y validaciones', 'icon': Icons.mail_outline, 'route': 'validations'},
+  {'label': 'Solicitudes', 'icon': Icons.mail_outline, 'route': 'Requests'},
   {'label': 'Tareas', 'icon': Icons.assignment_outlined, 'route': 'Tasks'},
   {'label': 'Mi desempeño', 'icon': Icons.area_chart, 'route': 'AnalyticsAndReports'},
   {'label': 'Cerrar sesión', 'icon': Icons.logout, 'route': 'Login'},
@@ -73,7 +73,7 @@ class _HomeState extends State<Home> {
             if (route == 'Group') {
               Navigator.push(context, MaterialPageRoute(builder: (context) => GroupScreen()));
             } else if (route == 'Group/Invitations') {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const RequestAndValidationsScreen()));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const RequestsScreen()));
             } else if (route == 'Group/Members') {
               // Implementa la navegación a la pantalla de miembros
             } else if (route == 'Tasks') {
@@ -92,8 +92,8 @@ class _HomeState extends State<Home> {
                   ),
                 );
               }
-            } else if (route == 'RequestsAndValidations') {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const RequestAndValidationsScreen()));
+            } else if (route == 'Requests') {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const RequestsScreen()));
             } else if (route == 'Login') {
               ApiClient.resetToken();
               Navigator.push(context, MaterialPageRoute(builder: (context) => const Login()));
@@ -355,8 +355,8 @@ class _CustomDrawer extends StatelessWidget {
             ),
             _buildDrawerItem(
               icon: Icons.fact_check,
-              label: 'Solicitudes y Validaciones',
-              onTap: () => onNavigate('RequestsAndValidations'),
+              label: 'Solicitudes',
+              onTap: () => onNavigate('Requests'),
             ),
             const SizedBox(height: gap),
             const Divider(color: Colors.white),
