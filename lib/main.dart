@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:synhub/shared/views/login.dart';
+import 'package:synhub/requests/bloc/request_bloc.dart';
+import 'package:synhub/requests/services/request_service.dart';
+import 'package:synhub/shared/views/Login.dart';
 import 'package:synhub/tasks/bloc/task/task_bloc.dart';
 
 import 'shared/bloc/auth/auth_bloc.dart';
@@ -32,6 +34,9 @@ class MyApp extends StatelessWidget {
         BlocProvider(
           create: (_) => TaskBloc(taskService: TaskService()),
         ),
+        BlocProvider(
+          create: (_) => RequestBloc(requestService: RequestService()),
+        )
       ],
       child: MaterialApp(
         title: 'SynHub',
