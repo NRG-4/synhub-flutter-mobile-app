@@ -92,7 +92,8 @@ class _RequestsScreenState extends State<RequestsScreen> {
             child: Text(title,
                 style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.bold
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A4E85)
                 )
             ),
           ),
