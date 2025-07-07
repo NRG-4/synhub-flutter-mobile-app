@@ -1,11 +1,13 @@
 class TaskOverview {
   final int completed;
+  final int done;
   final int inProgress;
   final int pending;
   final int overdue;
 
   TaskOverview({
     required this.completed,
+    required this.done,
     required this.inProgress,
     required this.pending,
     required this.overdue,
@@ -15,6 +17,7 @@ class TaskOverview {
     final details = json['details'] as Map<String, dynamic>? ?? {};
     return TaskOverview(
       completed: details['COMPLETED'] ?? 0,
+      done: details['DONE'] ?? 0,
       inProgress: details['IN_PROGRESS'] ?? 0,
       pending: details['PENDING'] ?? 0,
       overdue: details['OVERDUE'] ?? 0,
