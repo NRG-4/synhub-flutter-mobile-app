@@ -2,22 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../requests/bloc/request_bloc.dart';
+import '../../requests/views/create_request_screen.dart';
 import '../bloc/task/task_bloc.dart';
 import '../bloc/task/task_event.dart';
 import '../bloc/task/task_state.dart';
 import '../models/task.dart';
 import '../services/task_service.dart';
 
-class TaskDetail extends StatelessWidget {
+class TaskDetail extends StatefulWidget {
   final int taskId;
 
   const TaskDetail({super.key, required this.taskId});
 
   @override
+  State<TaskDetail> createState() => _TaskDetailState();
+}
+
+class _TaskDetailState extends State<TaskDetail> {
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => TaskBloc(taskService: TaskService())
-        ..add(LoadTaskByIdEvent(taskId)),
+        ..add(LoadTaskByIdEvent(widget.taskId)),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -45,7 +52,7 @@ class TaskDetail extends StatelessWidget {
 
   Widget _buildTaskCard(BuildContext context, Task task) {
 
-    final progressColor = _getDividerColor(task.createdAt, task.dueDate);
+    final progressColor = _getDividerColor(task.createdAt, task.dueDate, task.status);
     final formattedDates = _formatTaskDates(task);
 
     return Padding(
@@ -117,33 +124,86 @@ class TaskDetail extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Center(
-                child: ElevatedButton(
-                    onPressed: (){},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFFF9800),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+              if (task.status == "IN_PROGRESS") ...[
+                Column(
+                  children: [
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => CreateRequestScreen(task: task))
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFFFF9800),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text("Enviar un comentario", style: TextStyle(fontSize: 18, color: Colors.white)),
                       ),
                     ),
-                    child:
-                    Text("Enviar un comentario", style: TextStyle(fontSize: 18, color: Colors.white))
-                ),
-              ),
-              const SizedBox(height: 12),
-              Center(
-                child: ElevatedButton(
-                    onPressed: (){},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xff4CAF50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          final confirmation = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text('Completado'),
+                              content: Text('¿Deseas marcar esta tarea como completada? Se creará una solicitud.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(false),
+                                  child: const Text('Cancelar'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(true),
+                                  child: const Text('Confirmar', style: TextStyle(color: Colors.green)),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmation == true) {
+                            try {
+                              await context.read<RequestBloc>()
+                                  .requestService.createRequest(
+                                  task.id,
+                                  'Se ha completado la tarea.',
+                                  'SUBMISSION'
+                              );
+                              context.read<TaskBloc>().add(
+                                UpdateTaskStatusEvent(
+                                  taskId: task.id,
+                                  status: 'COMPLETED',
+                                ),
+                              );
+
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Request created successfully')),
+                              );
+                            } catch (e) {
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Failed to create request')),
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xff4CAF50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text("Marcar como completada", style: TextStyle(fontSize: 18, color: Colors.white)),
                       ),
                     ),
-                    child:
-                    Text("Marcar como completada", style: TextStyle(fontSize: 18, color: Colors.white))
-                ),
-              )
+                  ],
+                )
+              ]
             ],
           ),
         ),
@@ -151,7 +211,11 @@ class TaskDetail extends StatelessWidget {
     );
   }
 
-  Color _getDividerColor(String createdAt, String dueDate) {
+  Color _getDividerColor(String createdAt, String dueDate, String status) {
+    if (status == "COMPLETED") return Color(0xFF4CAF50); // Verde para tareas completadas
+    if (status == "ON_HOLD") return Color(0xFFFF832A); // Naranja para tareas en espera
+    if (status == "DONE") return Color(0xFF4A90E2); // Azul para tareas hechas
+    if(status == "EXPIRED") return Color(0xFFF44336); // Rojo para tareas vencidas
     try {
       // Parsear fechas considerando la zona horaria
       final created = _parseDateWithTimeZone(createdAt);
