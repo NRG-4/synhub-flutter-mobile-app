@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:synhub/requests/views/create_request_screen.dart';
 import 'package:synhub/tasks/views/task_detail.dart';
 
+import '../../requests/bloc/request_bloc.dart';
 import '../bloc/task/task_bloc.dart';
 import '../bloc/task/task_event.dart';
 import '../bloc/task/task_state.dart';
@@ -284,7 +286,12 @@ class _TasksScreenState extends State<TasksScreen> {
                 const SizedBox(height: 12),
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                          context, 
+                          MaterialPageRoute(builder: (context) => CreateRequestScreen(task: task))
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFFFF9800),
                       shape: RoundedRectangleBorder(
@@ -297,7 +304,52 @@ class _TasksScreenState extends State<TasksScreen> {
                 const SizedBox(height: 12),
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      final confirmation = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text('Completado'),
+                          content: Text('¿Deseas marcar esta tarea como completada? Se creará una solicitud.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: const Text('Cancelar'),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: const Text('Confirmar', style: TextStyle(color: Colors.green)),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmation == true) {
+                        try {
+                          await context.read<RequestBloc>()
+                              .requestService.createRequest(
+                              task.id,
+                              'Se ha completado la tarea.',
+                              'SUBMISSION'
+                          );
+                          context.read<TaskBloc>().add(
+                            UpdateTaskStatusEvent(
+                              taskId: task.id,
+                              status: 'COMPLETED',
+                            ),
+                          );
+                          context.read<TaskBloc>().add(LoadMemberTasksEvent());
+
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Request created successfully')),
+                          );
+                        } catch (e) {
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to create request')),
+                          );
+                        }
+                      }
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xff4CAF50),
                       shape: RoundedRectangleBorder(

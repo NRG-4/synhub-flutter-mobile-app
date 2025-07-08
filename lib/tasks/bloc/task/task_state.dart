@@ -6,6 +6,8 @@ class TaskInitial extends TaskState {}
 
 class TaskLoading extends TaskState {}
 
+class TaskStatusUpdated extends TaskState {}
+
 class MemberTasksLoaded extends TaskState {
   final List<Task> tasks;
 

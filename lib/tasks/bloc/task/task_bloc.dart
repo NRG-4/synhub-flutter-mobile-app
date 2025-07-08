@@ -10,6 +10,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
   TaskBloc({required this.taskService}) : super(TaskInitial()) {
     on<LoadMemberTasksEvent>(_onLoadMemberTasks);
     on<LoadTaskByIdEvent>(_onLoadTaskById);
+    on<UpdateTaskStatusEvent>(_onUpdateTaskStatus);
   }
 
   Future<void> _onLoadMemberTasks(
@@ -33,6 +34,21 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
     try {
       final task = await taskService.getTaskById(event.taskId);
       emit(TaskDetailLoaded(task));
+    } catch (e) {
+      emit(TaskError(e.toString()));
+    }
+  }
+
+  Future<void> _onUpdateTaskStatus(
+      UpdateTaskStatusEvent event,
+      Emitter<TaskState> emit,
+      ) async {
+    emit(TaskLoading());
+    try {
+      await taskService.updateTaskStatus(event.taskId, event.status);
+      emit(TaskStatusUpdated());
+      final tasks = await taskService.getMemberTasks();
+      emit(MemberTasksLoaded(tasks));
     } catch (e) {
       emit(TaskError(e.toString()));
     }
