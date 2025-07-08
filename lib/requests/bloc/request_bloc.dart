@@ -9,7 +9,8 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
 
   RequestBloc({required this.requestService}): super (RequestInitial()) {
     on<LoadMemberRequestsEvent>(_onLoadMemberRequests);
-    on<LoadRequestByTaskIdEvent>(_onLoadRequestByTaskId);
+    on<LoadRequestByIdEvent>(_onLoadRequestById);
+    on<CreateRequestEvent>(_onCreateRequest);
   }
 
   Future<void> _onLoadMemberRequests(
@@ -25,13 +26,30 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
     }
   }
 
-  Future<void> _onLoadRequestByTaskId(
-      LoadRequestByTaskIdEvent event,
+  Future<void> _onLoadRequestById(
+      LoadRequestByIdEvent event,
       Emitter<RequestState> emit,
       ) async {
     emit(RequestLoading());
     try {
-      final request = await requestService.getRequestByTaskId(event.taskId);
+      final request = await requestService.getRequestById(event.taskId, event.requestId);
+      emit(RequestDetailLoaded(request));
+    } catch (e) {
+      emit(RequestError(e.toString()));
+    }
+  }
+
+  Future<void> _onCreateRequest(
+      CreateRequestEvent event,
+      Emitter<RequestState> emit,
+      ) async {
+    emit(RequestLoading());
+    try {
+      final request = await requestService.createRequest(
+        event.taskId,
+        event.description,
+        event.requestType,
+      );
       emit(RequestDetailLoaded(request));
     } catch (e) {
       emit(RequestError(e.toString()));
