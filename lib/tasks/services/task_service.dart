@@ -20,4 +20,14 @@ class TaskService {
     }
     throw Exception('Failed to load task');
   }
+
+  Future<void> updateTaskStatus(int taskId, String status) async {
+    final response = await ApiClient.put(
+      'tasks/$taskId/status/$status',
+      body: null,
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update task status');
+    }
+  }
 }
