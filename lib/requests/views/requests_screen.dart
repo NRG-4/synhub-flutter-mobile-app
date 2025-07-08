@@ -23,20 +23,20 @@ class _RequestsScreenState extends State<RequestsScreen> {
 
   IconData _getRequestStatusIcon(String requestStatus) {
     switch (requestStatus) {
-      case 'PENDING':
+      case 'MODIFICATION':
         return Icons.timer;
-      case 'APPROVED':
+      case 'SUBMISSION':
         return Icons.check;
       default:
         return Icons.close_rounded;
     }
   }
 
-  Color _setTypeColor(String requestStatus) {
-    switch (requestStatus) {
-      case 'PENDING':
+  Color _setTypeColor(String requestType) {
+    switch (requestType) {
+      case 'MODIFICATION':
         return const Color(0xFFFF832A);
-      case 'APPROVED':
+      case 'SUBMISSION':
         return const Color(0xFF4CAF50);
       default:
         return const Color(0xFFF44336);
@@ -117,7 +117,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
           else
             Column(
               children:
-              requests.map((r) => _buildRequestCard(r, isSolved)).toList(),
+                requests.map((r) => _buildRequestCard(r, isSolved)).toList(),
             )
         ],
       );
@@ -164,76 +164,83 @@ class _RequestsScreenState extends State<RequestsScreen> {
           if (confirmation == true) {
             try {
               await context.read<RequestBloc>()
-                  .requestService.deleteRequest(request.task.id);
+                  .requestService.deleteRequest(request.task.id, request.id);
               if (!mounted) return;
               context.read<RequestBloc>().add(LoadMemberRequestsEvent());
-            } catch (e) {
-
-            }
+            } catch (e) {}
           }
         }
       },
 
-      child: Container(
-        height: 190,
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: Color(0xFF1A4E85),
-        ),
+      child: Column(
+        children: [
+          Container(
+            height: 190,
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Color(0xFF1A4E85),
+            ),
 
-        width: double.infinity,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  flex: 4,
-                  child: Card(
-                    margin: const EdgeInsets.all(10),
-                    color: Colors.white,
-                    child: Container(
-                      height: 160,
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(request.task.title,
-                              style: const TextStyle(
-                                  color: Colors.black
-                              )
-                          ),
-                          const Divider(thickness: 2),
-                          const SizedBox(height: 8),
-                          Text('Comentario: ${request.description}', style: const TextStyle(color: Colors.black)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    height: 160,
-                    margin: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: _setTypeColor(request.requestStatus),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        _getRequestStatusIcon(request.requestStatus),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: Card(
+                        margin: const EdgeInsets.all(10),
                         color: Colors.white,
-                        size: 24,
+                        child: Container(
+                          height: 160,
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(request.task.title,
+                                  style: const TextStyle(
+                                      color: Colors.black
+                                  )
+                              ),
+                              const Divider(thickness: 2),
+                              const SizedBox(height: 8),
+                              Text('Comentario: ${request.description}', style: const TextStyle(color: Colors.black)),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        height: 160,
+                        margin: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: request.requestType == "EXPIRED"
+                            ? Color(0xFFF44336)
+                            : _setTypeColor(request.requestType),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            request.requestType == "EXPIRED"
+                              ? Icons.warning_amber_rounded
+                              : _getRequestStatusIcon(request.requestType),
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
                 )
               ],
             )
-          ],
-        )
+          ),
+          SizedBox(height: 20)
+        ],
       )
     );
   }
