@@ -114,82 +114,82 @@ class _HomeState extends State<Home> {
                 // --- MÉTRICAS RESUMIDAS ---
                 Widget metricsSummary = (_memberId.isNotEmpty)
                     ? BlocProvider(
-                        create: (_) => StatisticsBloc(StatisticsService())..add(LoadMemberStatistics(_memberId)),
-                        child: BlocBuilder<StatisticsBloc, StatisticsState>(
-                          builder: (context, statsState) {
-                            if (statsState is StatisticsLoaded) {
-                              final overview = statsState.statistics.overview;
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => StatisticsScreen(
-                                        memberId: _memberId,
-                                        memberName: '$_name $_surname',
-                                        username: _name,
-                                        profileImageUrl: _imgUrl,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Card(
-                                  color: Color(0xFF1A4E85),
-                                  elevation: 4,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Resumen de métricas',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 16,
-                                              ),
-                                            ),
-                                            SizedBox(height: 6),
-                                            Row(
-                                              children: [
-                                                Icon(Icons.check_circle, color: Colors.greenAccent, size: 20),
-                                                SizedBox(width: 4),
-                                                Text(
-                                                  'Completadas: ${overview.completed}',
-                                                  style: TextStyle(color: Colors.white, fontSize: 14),
-                                                ),
-                                                SizedBox(width: 16),
-                                                Icon(Icons.autorenew, color: Colors.blueAccent, size: 20),
-                                                SizedBox(width: 4),
-                                                Text(
-                                                  'En progreso: ${overview.inProgress}',
-                                                  style: TextStyle(color: Colors.white, fontSize: 14),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                        Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
-                                      ],
-                                    ),
-                                  ),
+                  create: (_) => StatisticsBloc(StatisticsService())..add(LoadMemberStatistics(_memberId)),
+                  child: BlocBuilder<StatisticsBloc, StatisticsState>(
+                    builder: (context, statsState) {
+                      if (statsState is StatisticsLoaded) {
+                        final overview = statsState.statistics.overview;
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => StatisticsScreen(
+                                  memberId: _memberId,
+                                  memberName: '$_name $_surname',
+                                  username: _name,
+                                  profileImageUrl: _imgUrl,
                                 ),
-                              );
-                            } else if (statsState is StatisticsLoading) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Center(child: CircularProgressIndicator()),
-                              );
-                            } else {
-                              return SizedBox.shrink();
-                            }
+                              ),
+                            );
                           },
-                        ),
-                      )
+                          child: Card(
+                            color: Color(0xFF1A4E85),
+                            elevation: 4,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Resumen de métricas',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      SizedBox(height: 6),
+                                      Row(
+                                        children: [
+                                          Icon(Icons.check_circle, color: Colors.greenAccent, size: 20),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'Terminadas: ${overview.done}',
+                                            style: TextStyle(color: Colors.white, fontSize: 14),
+                                          ),
+                                          SizedBox(width: 16),
+                                          Icon(Icons.autorenew, color: Colors.blueAccent, size: 20),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'En progreso: ${overview.inProgress}',
+                                            style: TextStyle(color: Colors.white, fontSize: 14),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  Icon(Icons.arrow_forward_ios, color: Colors.white, size: 20),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      } else if (statsState is StatisticsLoading) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      } else {
+                        return SizedBox.shrink();
+                      }
+                    },
+                  ),
+                )
                     : SizedBox.shrink();
                 // --- FIN MÉTRICAS RESUMIDAS ---
 

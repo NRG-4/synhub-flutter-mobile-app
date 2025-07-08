@@ -3,7 +3,10 @@ import 'package:http/http.dart' as http;
 
 class ApiClient {
   static String? _token;
-  static const String _baseUrl = 'http://10.0.2.2:8080/api/v1/';
+  /// Base URL for the API. Change this to your server's URL.
+  /// For Android emulator, use 'http://10.0.2.2:8080/api/v1/'
+  /// For deployed server, use 'https://synhub-backend.onrender.com/api/v1/'.
+  static const String _baseUrl = 'https://synhub-backend.onrender.com/api/v1/';
 
   static void updateToken(String newToken) {
     _token = newToken;
