@@ -10,6 +10,7 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
 
   GroupBloc({required this.groupService}) : super(GroupInitial()) {
     on<SearchGroupByCodeEvent>(_onSearchGroupByCode);
+    on<LoadMemberGroupEvent>(_onLoadMemberGroup);
   }
 
   Future<void> _onSearchGroupByCode(
@@ -30,6 +31,19 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
       }
     } catch (e) {
       emit(GroupError('Error de conexión: $e'));
+    }
+  }
+
+  Future<void> _onLoadMemberGroup(
+      LoadMemberGroupEvent event,
+      Emitter<GroupState> emit,
+      ) async {
+    emit(GroupLoading());
+    try {
+      final group = await groupService.getMemberGroup();
+      emit(MemberGroupLoaded(group));
+    } catch (e) {
+      emit(GroupError('Error loading member group: $e'));
     }
   }
 }

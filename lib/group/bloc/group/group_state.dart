@@ -23,3 +23,9 @@ class GroupError extends GroupState {
 
   GroupError(this.error);
 }
+
+class MemberGroupLoaded extends GroupState {
+  final Group group;
+
+  MemberGroupLoaded(this.group);
+}
